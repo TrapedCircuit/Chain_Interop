@@ -40,4 +40,4 @@ version = "0.5"
 features = ["cors", "trace"]
 
 [dependencies.izar-core]
-path = "../izar-core"
+path = "../core"

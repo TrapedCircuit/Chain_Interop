@@ -1,22 +1,10 @@
-# IZAR
-
-![iydyuz.png](https://files.catbox.moe/iydyuz.png)
-
+# Chain Interop
 
 ## Build
 
 Before building, Please ensure your machine has `Rust`.
 
-Start by github clone
-
 ```sh
-git clone https://github.com/izar-bridge/izar.git
-```
-
-and build by `cargo`
-
-```sh
-cd izar
 cargo build --release
 ```
 
@@ -61,8 +49,6 @@ cargo build --release
    #....
    #....
    ```
-
-
 
 ## Run
 

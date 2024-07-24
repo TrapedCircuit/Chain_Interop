@@ -24,4 +24,4 @@ workspace = true
 workspace = true
 
 [dependencies.izar-core]
-path = "../izar-core"
+path = "../core"
