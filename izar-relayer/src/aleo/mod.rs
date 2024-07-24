@@ -1,0 +1,5 @@
+pub mod connector;
+pub mod operator;
+
+const INVALID_SIGN: &str = "sign1hwcrc80sesjnu3mkrdt8n640g0yvpvz5u7zyjf59xnhu0prmtgpgs08uwfwdxfx8s4ahp0mhpr28c3sr6zt85cg3rw2nvyevags9kq3alq8fmygkm7gcleapqprf70yvfe5w3c3tywwz4a6n6h80hfexppte9hmr2emlpm0fx5srhx87vjut8s6tj3ay7ecftqfskamp022s7jwqr6a";
+const INVALID_VALIDATOR: &str = "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc";

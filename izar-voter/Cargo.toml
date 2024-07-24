@@ -1,0 +1,27 @@
+[package]
+name = "izar-voter"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+ethers = "2.0"
+clap = { version = "4", features = ["derive"] }
+toml = "0.7"
+rayon = "1.7"
+rand = "0.8"
+ureq = { version = "2.8", features = ["json"] }
+backon = "0.4"
+
+[dependencies.aleo-rust]
+workspace = true
+
+[dev-dependencies.rusty-hook]
+workspace = true
+
+[dependencies.izar-core]
+path = "../izar-core"

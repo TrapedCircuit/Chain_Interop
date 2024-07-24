@@ -1,0 +1,65 @@
+use aleo_rust::{Block, Network, ProgramID};
+use izar_core::Transition;
+
+#[derive(Clone, Debug)]
+pub struct TransitionFilter<N: Network> {
+    program_ids: Vec<ProgramID<N>>,
+    function_names: Vec<String>,
+}
+
+impl<N: Network> Default for TransitionFilter<N> {
+    fn default() -> Self {
+        Self { program_ids: Vec::new(), function_names: Vec::new() }
+    }
+}
+
+impl<N: Network> TransitionFilter<N> {
+    pub fn add_programs(mut self, program_ids: Vec<ProgramID<N>>) -> Self {
+        self.program_ids.extend(program_ids);
+        self
+    }
+
+    pub fn add_function(mut self, function_name: String) -> Self {
+        self.function_names.push(function_name);
+        self
+    }
+
+    pub fn filter_block(&self, block: Block<N>) -> Vec<Transition<N>> {
+        let ts = block
+            .transactions()
+            .clone()
+            .into_iter()
+            .filter(|tx| tx.is_accepted())
+            .flat_map(|tx| tx.into_transaction().into_transitions())
+            .collect::<Vec<Transition<N>>>();
+        ts.into_iter()
+            .filter(|t| {
+                let program_id = t.program_id();
+                self.program_ids.contains(program_id)
+            })
+            .collect()
+    }
+
+    pub fn filter_block_with_txid(&self, block: Block<N>) -> Vec<(N::TransactionID, Transition<N>)> {
+        let ts = block
+            .transactions()
+            .clone()
+            .into_iter()
+            .filter(|tx| tx.is_accepted())
+            .flat_map(|tx| {
+                tx.clone()
+                    .into_transaction()
+                    .into_transitions()
+                    .map(|t| (tx.id(), t))
+                    .collect::<Vec<(N::TransactionID, Transition<N>)>>()
+            })
+            .collect::<Vec<(N::TransactionID, Transition<N>)>>();
+
+        ts.into_iter()
+            .filter(|(_, t)| {
+                let program_id = t.program_id();
+                self.program_ids.contains(program_id)
+            })
+            .collect()
+    }
+}

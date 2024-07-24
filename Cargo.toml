@@ -1,0 +1,19 @@
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+
+[workspace]
+members = ["izar-voter", "izar-core", "izar-relayer"]
+resolver = "2"
+
+[workspace.dependencies.aleo-rust]
+git = "https://github.com/izar-bridge/aleo-rust"
+branch = "fix/remove-mut"
+
+[workspace.dependencies.rocksdb]
+version = "0.21"
+default-features = false
+features = ["lz4"]
+
+[workspace.dependencies.rusty-hook]
+version = "0.11.2"
