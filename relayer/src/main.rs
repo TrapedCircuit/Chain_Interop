@@ -21,7 +21,7 @@ pub struct RelayerConfig {
     pub port: u16,
     pub metrics: String,
     // nodes configs
-    pub aleo_config: AleoConfig,
+    pub aleo_config: Option<AleoConfig>,
     pub sepolia_config: Option<EthConfig>,
     pub linea_config: Option<EthConfig>,
     pub zksync_config: Option<EthConfig>,
@@ -85,8 +85,10 @@ async fn init<I: IzarNetwork>(config: RelayerConfig) {
     let mut operators = IzarRelayer::<I>::new(port, api_dest);
 
     // init aleo operator
-    let aleo_op = config.aleo_config.parse::<I::Aleo>();
-    operators.insert_operator(I::Aleo::IZAR_CHAIN_ID, Box::new(aleo_op));
+    if let Some(config) = config.aleo_config {
+        let aleo_op = config.parse::<I::Aleo>();
+        operators.insert_operator(I::Aleo::IZAR_CHAIN_ID, Box::new(aleo_op));
+    }
 
     // init sepolia operator
     if let Some(config) = config.sepolia_config {

@@ -22,10 +22,10 @@ impl IzarNetwork for IzarTestnet {
 pub struct Sepolia;
 
 impl EthNetwork for Sepolia {
-    const WRAPPER_CONTRACT: &'static str = "0x7d164F30f0b6a2ABAE55Adae9645a22268747D61";
-    const PROXY_CONTRACT: &'static str = "0xa4DB034df1353F620207AA8ab695318316Fc4D93";
-    const LOCK_CONTRACT: &'static str = "0xE5BaBF57e90f9E219a881D24789F742cCAB6f6B1";
-    const LOGIC_CONTRACT: &'static str = "0x6221A66723a47890eC66912364F20abd62279365";
+    const WRAPPER_CONTRACT: &'static str = "0x792195c346F845426CaA6BCa3F25e50579526ceB";
+    const PROXY_CONTRACT: &'static str = "0xf107a2a6747Bcd23259A44f01E3A69F77f9A5977";
+    const LOCK_CONTRACT: &'static str = "0x7927eaD16aE53d91cA4Ef579B8493DdB3Eb5D465";
+    const LOGIC_CONTRACT: &'static str = "0xeFAFD2C228932eaC573d6a9A8AB73951A7791BC2";
 
     const ETH_CHAIN_ID: u32 = 11155111;
     const IZAR_CHAIN_ID: u32 = 1;
@@ -99,10 +99,10 @@ impl EthNetwork for ScrollTestnet {
 pub struct OptimismTestnet;
 
 impl EthNetwork for OptimismTestnet {
-    const WRAPPER_CONTRACT: &'static str = "0xdcb58E26413F087312C2BE7D8C1b8B10F90B6C5F";
-    const PROXY_CONTRACT: &'static str = "0xDFc105358eFb26E0373741F5ac8d171Ae6897CA7";
-    const LOCK_CONTRACT: &'static str = "0xE7f5A4bAA3dd8509E96F26b7920e03965FeFb599";
-    const LOGIC_CONTRACT: &'static str = "0xa5A5dC4A6F869e279AC32b1925d2605a96289859";
+    const WRAPPER_CONTRACT: &'static str = "0xfD6f2f9cBAA8227Cc3bd81Ca7E1E695d3b203C71";
+    const PROXY_CONTRACT: &'static str = "0x512CE08A3fD4366368Ab80A360a81700dA850d72";
+    const LOCK_CONTRACT: &'static str = "0x1734edD5AF23e2dB06720BEf02d4534EE0C004Aa";
+    const LOGIC_CONTRACT: &'static str = "0x5620fa8E0ac67489945Fa107778d97F757a75C1E";
 
     const ETH_CHAIN_ID: u32 = 420;
     const IZAR_CHAIN_ID: u32 = 7;

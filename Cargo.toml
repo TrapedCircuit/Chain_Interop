@@ -11,7 +11,7 @@ git = "https://github.com/izar-bridge/aleo-rust"
 branch = "fix/remove-mut"
 
 [workspace.dependencies.rocksdb]
-version = "0.21"
+version = "0.22"
 default-features = false
 features = ["lz4"]
 
