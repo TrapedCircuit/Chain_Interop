@@ -9,7 +9,7 @@ pub trait EthNetwork: Send + Sync + Clone + 'static + std::fmt::Debug {
     const GAS_LIMIT: u128;
     const START_HEIGHT: u64;
 
-    const REQUEST_BLOCK_NUM: usize = 1000;
+    const REQUEST_BLOCK_NUM: usize = 5000;
 
     const CONFIRMATIONS: usize = 0; // L1 need 12 confirmations, L2 need 0 confirmations
 

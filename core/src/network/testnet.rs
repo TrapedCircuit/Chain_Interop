@@ -30,7 +30,7 @@ impl EthNetwork for Sepolia {
     const ETH_CHAIN_ID: u32 = 11155111;
     const IZAR_CHAIN_ID: u32 = 1;
     const GAS_LIMIT: u128 = 1_000_000;
-    const START_HEIGHT: u64 = 5468808;
+    const START_HEIGHT: u64 = 6499888;
     // const CONFIRMATIONS: usize = 64; // need two epochs
 }
 
@@ -107,7 +107,7 @@ impl EthNetwork for OptimismTestnet {
     const ETH_CHAIN_ID: u32 = 420;
     const IZAR_CHAIN_ID: u32 = 7;
     const GAS_LIMIT: u128 = 1_000_000;
-    const START_HEIGHT: u64 = 8690339;
+    const START_HEIGHT: u64 = 15986582;
 }
 
 #[derive(Clone, Copy, Debug)]

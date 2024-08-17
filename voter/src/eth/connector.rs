@@ -92,9 +92,8 @@ impl<E: EthNetwork> EthConnector<E> {
                 }
             }
             tracing::warn!("fetched eth blocks from {} to {}", cur, end);
+            self.current_height.insert(E::ETH_CHAIN_ID, latest_height)?;
         }
-
-        self.current_height.insert(E::ETH_CHAIN_ID, latest_height)?;
 
         Ok(())
     }
