@@ -59,7 +59,6 @@ impl<E: EthNetwork> EthConnector<E> {
             return Ok(());
         }
 
-        tracing::info!("syncing eth blocks from {} to {}", cur_height, latest_height);
         for cur in (cur_height..latest_height).step_by(E::REQUEST_BLOCK_NUM) {
             let end = (cur + E::REQUEST_BLOCK_NUM as u64).min(latest_height);
 
@@ -73,17 +72,17 @@ impl<E: EthNetwork> EthConnector<E> {
                 .to_block(end);
 
             let logs = self.client.get_logs(&filter).await?;
-
             for mut chunk in logs.into_iter().chunks(2).into_iter() {
                 let payload_log = chunk.next();
                 let fee_log = chunk.next();
 
                 match (fee_log, payload_log) {
                     (Some(fee_log), Some(payload_log)) => {
+                        tracing::info!("get fee log {:#?}\n, payload log {:#?}", fee_log, payload_log);
                         let tid = fee_log.transaction_hash.ok_or(anyhow!("no tx hash"))?;
-                        let payload_log = parse_log::<EventPayload>(payload_log)?;
                         let fee_log = parse_log::<EventFee>(fee_log)?;
-
+                        tracing::info!("fee log {:?}", fee_log);
+                        let payload_log = parse_log::<EventPayload>(payload_log)?;
                         let tx = EthTransaction::<E>::from_logs(fee_log, payload_log, tid)?;
                         tracing::info!("got a eth tx {:?}", tx); // TODO
                         self.unconfrimed_txs.insert(E::format_str(tid), tx.try_into()?)?;

@@ -31,7 +31,6 @@ impl<I: IzarNetwork, E: EthNetwork> Operator<I> for EthOperator<E> {
         let payload = Bytes::from(tx.eth_payload()?);
         let (logic_addr, lock_addr) = (E::LOGIC_CONTRACT.parse::<Address>()?, E::LOCK_CONTRACT.parse::<Address>()?);
         let bridge_call = Bridge::new(logic_addr, self.client.clone());
-
         // need support eip1159
         let tx_hash = bridge_call
             .receive_payload(from_chain_id, nonce, src_addr_bytes, lock_addr, payload, sigs, U256::from(E::GAS_LIMIT))

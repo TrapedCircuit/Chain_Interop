@@ -1,10 +1,13 @@
+use std::str::FromStr;
+
 use crate::{network::eth::EthNetwork, serde::ZeroCopyWriter};
 use aleo_rust::{Field, Network};
 use base64::Engine;
 use ethers::{
     abi,
+    contract::abigen,
     prelude::EthLogDecode,
-    types::{Address, Bytes, H256, U256, U512},
+    types::{Address, Bytes, H256, U256},
 };
 use snarkvm_console::program::{FromField, ToField};
 use snarkvm_utilities::{FromBytes, ToBytes};
@@ -82,7 +85,7 @@ pub struct EventFee {
     pub token_address: Address,
     pub sender: Address,
     pub to_chain_id: U256,
-    pub to_address: U512,
+    pub to_address: Address,
     pub amount: U256,
     pub fee: U256,
 }
@@ -97,17 +100,64 @@ impl EthLogDecode for EventFee {
         let to_chain_id = U256::from_big_endian(&log.data[0..32]);
         let net = U256::from_big_endian(&log.data[64..96]);
         let fee = U256::from_big_endian(&log.data[96..128]);
-        let to_address = U512::from_big_endian(&log.data[160..223]);
+        let to_address = Address::from_slice(&log.data[160..180]);
 
         Ok(Self { token_address, sender, to_chain_id, to_address, amount: net, fee })
     }
 }
+
+abigen!(Proxy, "./src/types/proxy.json", event_derives(serde::Deserialize, serde::Serialize));
+abigen!(Lock, "./src/types/lock.json", event_derives(serde::Deserialize, serde::Serialize));
+
+#[test]
+fn test_decode_log() {
+    let fee_bytes = Bytes::from_str("0x0000000000000000000000007927ead16ae53d91ca4ef579b8493ddb3eb5d4650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000002a3078303030303030303030303030303030303030303030303030303030303030303030303030303030300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000602a3078303030303030303030303030303030303030303030303030303030303030303030303030303030301421cf4ff16099d45b24eb1043fb0b2b76ad6fbeda00b8fb0501090000000000000000000000000000000000000000000000000000").unwrap();
+    let fee_topics =
+        vec![H256::from_str("0xcdb9fb741d82c65a081bb855b5e42174193549c537fd57a199609593827cff71").unwrap()];
+    println!("{:?}", fee_bytes.len());
+    let fee_log = abi::RawLog { topics: fee_topics, data: fee_bytes.to_vec() };
+
+    let old_payload = Bytes::from_str("0A7A6B4554482E616C656F3F616C656F317977686C34637A6B703264357177747A737135706D6139676C666137766A32747977653575396D747A6834723932377666353873646C38347074000004BFC91B8E00000000000000000000000000000000000000000000000000").unwrap();
+    let mut deser = ZeroCopyWriter::from(old_payload.to_vec());
+    let to_asset_addr = String::from_utf8(deser.read_next_bytes()).unwrap();
+    let to_addr = String::from_utf8(deser.read_next_bytes()).unwrap();
+    let _amount = deser.read_u256();
+
+    println!("{:?}", to_asset_addr);
+    println!("{:?}", to_addr);
+    println!("{:?}", _amount);
+
+    let payload = EventPayload::decode_log(&fee_log).unwrap();
+    println!("{:?}", payload);
+
+    // let mut deser = ZeroCopyWriter::from(payload.to_vec());
+    // let to_asset_addr = Address::from_slice(&deser.read_next_bytes());
+    // let to_addr = Address::from_slice(&deser.read_next_bytes());
+    // let _amount = deser.read_u256();
+
+    // println!("{:?}", to_asset_addr);
+    // println!("{:?}", to_addr);
+    // println!("{:?}", _amount);
+}
+
+#[test]
+fn test_decode_log2() {
+    let log_bytes = Bytes::from_str("0x000000000000000000000000e5babf57e90f9e219a881d24789f742ccab6f6b100000000000000000000000000000000000000000000000000000000000ad575000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000a7a6b4554482e616c656f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006b0a7a6b4554482e616c656f3f616c656f317977686c34637a6b703264357177747a737135706d6139676c666137766a32747977653575396d747a6834723932377666353873646c38347074000004bfc91b8e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
+    let fee_topics =
+        vec![H256::from_str("0xcdb9fb741d82c65a081bb855b5e42174193549c537fd57a199609593827cff71").unwrap()];
+
+    let fee_log = abi::RawLog { topics: fee_topics, data: log_bytes.to_vec() };
+    let payload = EventPayload::decode_log(&fee_log).unwrap();
+
+    println!("{:?}", payload);
+}
+
 #[derive(Debug, Clone)]
 pub struct EventPayload {
     pub sender: Address,
     pub nonce: U256,
-    pub dst_chain_id: U256,
-    pub destination: U256,
+    pub dst_chain_id: u16,
+    pub destination: Bytes,
     pub payload: Bytes,
 }
 
@@ -116,16 +166,12 @@ impl EthLogDecode for EventPayload {
     where
         Self: Sized,
     {
-        let sender = Address::from(&log.data[12..32].try_into().map_err(|_| abi::Error::InvalidData)?);
-        let nonce: U256 = U256::from_big_endian(&log.data[32..64]);
-        let dst_chain_id = U256::from_big_endian(&log.data[64..96]);
-        let dst_start = usize::from_be_bytes(log.data[120..128].try_into().map_err(|_| abi::Error::InvalidData)?);
-        let payload_start = usize::from_be_bytes(log.data[152..160].try_into().map_err(|_| abi::Error::InvalidData)?);
-        let destination_len = U256::from_big_endian(&log.data[dst_start..dst_start + 32]);
-        let payload_len = U256::from_big_endian(&log.data[payload_start..payload_start + 32]);
-        let destination = U256::from_big_endian(&log.data[dst_start + 32..dst_start + 32 + destination_len.as_usize()]);
-        let payload = Bytes::from(log.data[payload_start + 32..payload_start + 32 + payload_len.as_usize()].to_vec());
-
+        let packet = PacketFilter::decode_log(log)?;
+        let sender = packet.sender;
+        let nonce = packet.nonce;
+        let dst_chain_id = packet.dst_chain_id;
+        let destination = packet.destination;
+        let payload = packet.payload;
         Ok(Self { sender, nonce, dst_chain_id, destination, payload })
     }
 }

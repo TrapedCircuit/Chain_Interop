@@ -105,7 +105,7 @@ impl EthNetwork for OptimismTestnet {
     const LOGIC_CONTRACT: &'static str = "0x5620fa8E0ac67489945Fa107778d97F757a75C1E";
 
     const ETH_CHAIN_ID: u32 = 420;
-    const IZAR_CHAIN_ID: u32 = 7;
+    const IZAR_CHAIN_ID: u32 = 2;
     const GAS_LIMIT: u128 = 1_000_000;
     const START_HEIGHT: u64 = 15986582;
 }
