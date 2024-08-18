@@ -78,10 +78,8 @@ impl<E: EthNetwork> EthConnector<E> {
 
                 match (fee_log, payload_log) {
                     (Some(fee_log), Some(payload_log)) => {
-                        tracing::info!("get fee log {:#?}\n, payload log {:#?}", fee_log, payload_log);
                         let tid = fee_log.transaction_hash.ok_or(anyhow!("no tx hash"))?;
                         let fee_log = parse_log::<EventFee>(fee_log)?;
-                        tracing::info!("fee log {:?}", fee_log);
                         let payload_log = parse_log::<EventPayload>(payload_log)?;
                         let tx = EthTransaction::<E>::from_logs(fee_log, payload_log, tid)?;
                         tracing::info!("got a eth tx {:?}", tx); // TODO
