@@ -1,4 +1,7 @@
-use crate::{network::eth::EthNetwork, serde::ZeroCopyWriter};
+use crate::{
+    network::eth::EthNetwork,
+    serde::{to_payload, ZeroCopyWriter},
+};
 use aleo_rust::{Field, Network};
 use base64::Engine;
 use ethers::{
@@ -51,10 +54,11 @@ impl<E: EthNetwork> TryInto<IzarTransaction> for EthTransaction<E> {
 
         let mut deser = ZeroCopyWriter::from(payload.to_vec());
         let to_asset_addr = String::from_utf8(deser.read_next_bytes())?;
-        let to_addr = Address::from_slice(&deser.read_next_bytes()).to_string();
-        let _amount = deser.read_u256();
+        let to_addr = E::format_str(Address::from_slice(&deser.read_next_bytes()));
+        let amount = deser.read_u256();
 
-        let payload_zip = base64::engine::general_purpose::STANDARD.encode(&payload);
+        let new_payload = to_payload(&to_asset_addr, &to_addr, amount);
+        let payload_zip = base64::engine::general_purpose::STANDARD.encode(&new_payload);
 
         Ok(IzarTransaction {
             priority: Default::default(),
