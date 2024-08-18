@@ -1,7 +1,4 @@
-use crate::{
-    network::eth::EthNetwork,
-    serde::{to_payload, ZeroCopyWriter},
-};
+use crate::{network::eth::EthNetwork, serde::ZeroCopyWriter};
 use aleo_rust::{Field, Network};
 use base64::Engine;
 use ethers::{
@@ -12,6 +9,7 @@ use ethers::{
 };
 use snarkvm_console::program::{FromField, ToField};
 use snarkvm_utilities::{FromBytes, ToBytes};
+use std::str::FromStr;
 
 use super::transaction::IzarTransaction;
 
@@ -53,11 +51,11 @@ impl<E: EthNetwork> TryInto<IzarTransaction> for EthTransaction<E> {
         let EthTransaction { tx_hash, from_addr, from_asset_addr, to_chain_id, fee, payload, nonce, .. } = self;
 
         let mut deser = ZeroCopyWriter::from(payload.to_vec());
-        let to_asset_addr = String::from_utf8(deser.read_next_bytes())?;
-        let to_addr = E::format_str(Address::from_slice(&deser.read_next_bytes()));
+        let to_asset_addr = Address::from_str(&String::from_utf8(deser.read_next_bytes())?)?;
+        let to_addr = Address::from_slice(&deser.read_next_bytes());
         let amount = deser.read_u256();
 
-        let new_payload = to_payload(&to_asset_addr, &to_addr, amount);
+        let new_payload = to_payload2(&to_asset_addr.as_bytes(), &to_addr.as_bytes(), amount);
         let payload_zip = base64::engine::general_purpose::STANDARD.encode(&new_payload);
 
         Ok(IzarTransaction {
@@ -69,8 +67,8 @@ impl<E: EthNetwork> TryInto<IzarTransaction> for EthTransaction<E> {
             from_addr: E::format_str(from_addr),
 
             to_chain_id,
-            to_asset_addr,
-            to_addr,
+            to_asset_addr: E::format_str(to_asset_addr),
+            to_addr: E::format_str(to_addr),
             to_chain_tx_hash: None,
 
             payload: payload_zip,
@@ -80,6 +78,27 @@ impl<E: EthNetwork> TryInto<IzarTransaction> for EthTransaction<E> {
             fee: fee.to_string(),
         })
     }
+}
+
+fn to_payload2(to_asset_bytes: &[u8], to_addr: &[u8], amount: U256) -> Vec<u8> {
+    let mut w = ZeroCopyWriter::default();
+    w.write_var_bytes(to_asset_bytes);
+    w.write_var_bytes(to_addr);
+    w.write_u256(&amount);
+    w.buf
+}
+
+#[test]
+fn test_to_payload() {
+    let to_asset: Address = "0x0000000000000000000000000000000000000000".parse().unwrap();
+    let to_addr: Address = "0x21Cf4ff16099D45b24Eb1043FB0b2b76ad6FbeDa".parse().unwrap();
+    let amount = U256::from(100u64);
+
+    let payload = to_payload2(to_asset.as_bytes(), to_addr.as_bytes(), amount);
+
+    let bytes = Bytes::from(payload);
+
+    println!("{:?}", bytes);
 }
 
 #[derive(Debug, Clone)]
