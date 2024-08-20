@@ -9,7 +9,7 @@ use ethers::{
 };
 use snarkvm_console::program::{FromField, ToField};
 use snarkvm_utilities::{FromBytes, ToBytes};
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use super::transaction::IzarTransaction;
 
@@ -55,8 +55,8 @@ impl<E: EthNetwork> TryInto<IzarTransaction> for EthTransaction<E> {
         let to_addr = Address::from_slice(&deser.read_next_bytes());
         let amount = deser.read_u256();
 
-        let new_payload = to_payload2(&to_asset_addr.as_bytes(), &to_addr.as_bytes(), amount);
-        let payload_zip = base64::engine::general_purpose::STANDARD.encode(&new_payload);
+        let new_payload = to_payload2(to_asset_addr.as_bytes(), to_addr.as_bytes(), amount);
+        let payload_zip = base64::engine::general_purpose::STANDARD.encode(new_payload);
 
         Ok(IzarTransaction {
             priority: Default::default(),
@@ -165,9 +165,9 @@ impl<N: Network> From<Address> for EthAddress<N> {
     }
 }
 
-impl<N: Network> ToString for EthAddress<N> {
-    fn to_string(&self) -> String {
-        format!("{:#020x}", self.inner)
+impl<N: Network> Display for EthAddress<N> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#020x}", self.inner)
     }
 }
 

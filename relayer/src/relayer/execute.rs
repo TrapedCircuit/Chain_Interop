@@ -29,58 +29,27 @@ impl<I: IzarNetwork> IzarRelayer<I> {
 
             // execute tx
             tracing::info!("executing {:?}", tx);
+            let from_chain_tx_hash = tx.from_chain_tx_hash.clone();
             let op = self_.operators.get(&tx.to_chain_id);
             let fut = async move {
                 let op = op.ok_or(anyhow!("no operator for chain id: {}", tx.to_chain_id))?;
-                let pending = op.execute(tx).await?;
-                Ok::<_, anyhow::Error>(pending)
+                let tx_hash = op.execute(&tx).await?;
+                Ok::<_, anyhow::Error>(tx_hash)
             };
 
-            match fut.await {
-                Ok(pending) => self_.store().pending().insert(tid, pending)?,
-                Err(e) => tracing::error!("failed to execute tx: {:?}", e),
-            }
-        }
-    }
-
-    pub fn pending_checker(self_: Arc<IzarRelayer<I>>) {
-        loop {
-            let tx = match self_.store().pending().iter().next() {
-                Some((_, tx)) => tx.into_owned(),
-                None => {
-                    tracing::warn!("no pending transaction, sleep 60s");
-                    std::thread::sleep(std::time::Duration::from_secs(60));
-                    continue;
+            let status = match fut.await {
+                Ok(tx_hash) => {
+                    tracing::info!("tx executed: {}", tx_hash);
+                    TransactionStatus::Success(tx_hash)
+                }
+                Err(e) => {
+                    tracing::error!("tx failed: {}", e);
+                    TransactionStatus::Rejected(e.to_string())
                 }
             };
-            let tid = tx.order_key();
-            let from_chain_tx_hash = tx.from_chain_tx_hash.clone();
-            self_.store().pending().remove(&tid).unwrap(); // TODO: handle error
 
-            let izar = self_.clone();
-            let fut = async move {
-                let op = izar
-                    .operators
-                    .get(&tx.to_chain_id)
-                    .ok_or(anyhow!("no operator for chain id: {}", tx.to_chain_id))?;
-                let status = op.pending(tx.clone())?.checking().await;
-                match status {
-                    TransactionStatus::Success(ref tx_hash) => {
-                        tracing::info!("tx {from_chain_tx_hash} finalized: {}", tx_hash);
-                        izar.store().finalize().insert(from_chain_tx_hash, tx.clone())?;
-                    }
-                    TransactionStatus::NotBroadcasted(ref e) => {
-                        tracing::error!("tx {from_chain_tx_hash} not broadcasted: {}, re-add executing pipeline", e);
-                    }
-                    TransactionStatus::Rejected(ref reason) => {
-                        tracing::error!("tx {from_chain_tx_hash} rejected: {}", reason)
-                    }
-                }
-                izar.patch_result(tx.from_chain_tx_hash.clone(), status).await?;
-                Ok::<_, anyhow::Error>(())
-            };
-
-            tokio::spawn(fut); // TODO: handle error? resource control?
+            // patch result
+            self_.patch_result(from_chain_tx_hash, status).await?;
         }
     }
 

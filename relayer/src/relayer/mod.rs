@@ -56,10 +56,6 @@ impl<I: IzarNetwork> IzarRelayer<I> {
             }
         });
 
-        // start pending checker
-        let checker = izar.clone();
-        tokio::spawn(async move { IzarRelayer::pending_checker(checker) });
-
         // start rest server
         IzarRelayer::serve(izar).await
     }
