@@ -30,26 +30,35 @@ impl<I: IzarNetwork> IzarRelayer<I> {
             // execute tx
             tracing::info!("executing {:?}", tx);
             let from_chain_tx_hash = tx.from_chain_tx_hash.clone();
-            let op = self_.operators.get(&tx.to_chain_id);
-            let fut = async move {
-                let op = op.ok_or(anyhow!("no operator for chain id: {}", tx.to_chain_id))?;
-                let tx_hash = op.execute(&tx).await?;
-                Ok::<_, anyhow::Error>(tx_hash)
-            };
-
-            let status = match fut.await {
-                Ok(tx_hash) => {
-                    tracing::info!("tx executed: {}", tx_hash);
-                    TransactionStatus::Success(tx_hash)
-                }
-                Err(e) => {
-                    tracing::error!("tx failed: {}", e);
-                    TransactionStatus::Rejected(e.to_string())
+            let fut = {
+                let self_ = self_.clone();
+                async move {
+                    let op = self_.operators.get(&tx.to_chain_id);
+                    let op = op.ok_or(anyhow!("no operator for chain id: {}", tx.to_chain_id))?;
+                    let tx_hash = op.execute(&tx).await?;
+                    self_.store().finalize().insert(tx.from_chain_tx_hash.clone(), tx.clone())?;
+                    Ok::<_, anyhow::Error>(tx_hash)
                 }
             };
 
-            // patch result
-            self_.patch_result(from_chain_tx_hash, status).await?;
+            tokio::spawn({
+                let self_ = self_.clone();
+                async move {
+                    let status = match fut.await {
+                        Ok(tx_hash) => {
+                            tracing::info!("tx executed: {}", tx_hash);
+                            TransactionStatus::Success(tx_hash)
+                        }
+                        Err(e) => {
+                            tracing::error!("tx failed: {}", e);
+                            TransactionStatus::Rejected(e.to_string())
+                        }
+                    };
+                    if let Err(e) = self_.patch_result(from_chain_tx_hash, status).await {
+                        tracing::error!("failed to patch result: {}", e);
+                    }
+                }
+            });
         }
     }
 

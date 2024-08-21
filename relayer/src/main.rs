@@ -19,7 +19,7 @@ pub struct Cli {
 pub struct RelayerConfig {
     pub api_dest: String,
     pub port: u16,
-    pub metrics: String,
+    pub metrics: Option<String>,
     // nodes configs
     pub aleo_config: Option<AleoConfig>,
     pub sepolia_config: Option<EthConfig>,
@@ -67,8 +67,10 @@ async fn main() {
     let config: RelayerConfig = toml::from_str(&config_str).expect("parse config");
     tracing::info!("relayer init with {:#?}", config);
     // init metrics
-    if let Err(e) = izar_core::metrics::metrics_init(&config.metrics, Duration::from_secs(30)) {
-        tracing::error!("metrics init error: {}", e);
+    if let Some(metrics) = &config.metrics {
+        if let Err(e) = izar_core::metrics::metrics_init(metrics, Duration::from_secs(30)) {
+            tracing::error!("metrics init error: {}", e);
+        }
     }
 
     if cli.mainnet {

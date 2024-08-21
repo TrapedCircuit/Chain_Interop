@@ -41,8 +41,8 @@ impl<I: IzarNetwork> IzarRelayer<I> {
         &self.sequencer
     }
 
-    pub fn client(&self) -> reqwest::Client {
-        self.client.clone()
+    pub fn client(&self) -> &reqwest::Client {
+        &self.client
     }
 
     pub async fn initial(self) -> anyhow::Result<()> {

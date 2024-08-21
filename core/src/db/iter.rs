@@ -22,20 +22,20 @@ impl<'a, K: Serialize + DeserializeOwned + Clone, V: Serialize + DeserializeOwne
             .db_iter
             .next()?
             .map_err(|e| {
-                tracing::error!("RocksDB Iter iterator error: {e}");
+                tracing::debug!("RocksDB Iter iterator error: {e}");
             })
             .ok()?;
 
         // Deserialize the key and value.
         let key = bincode::deserialize(&key[self.prefix.len()..])
             .map_err(|e| {
-                tracing::error!("RocksDB Iter deserialize(key) error: {e}");
+                tracing::debug!("RocksDB Iter deserialize(key) error: {e}");
             })
             .ok()?;
 
         let value = bincode::deserialize(&value)
             .map_err(|e| {
-                tracing::error!("RocksDB Iter deserialize(value) error: {e}");
+                tracing::debug!("RocksDB Iter deserialize(value) error: {e}");
             })
             .ok()?;
 
@@ -64,14 +64,14 @@ impl<'a, K: 'a + Clone + Serialize + DeserializeOwned> Iterator for Keys<'a, K> 
             .db_iter
             .next()?
             .map_err(|e| {
-                tracing::error!("RocksDB Keys iterator error: {e}");
+                tracing::debug!("RocksDB Keys iterator error: {e}");
             })
             .ok()?;
 
         // Deserialize the key.
         let key = bincode::deserialize(&key[self.prefix.len()..])
             .map_err(|e| {
-                tracing::error!("RocksDB Keys deserialize(key) error: {e}");
+                tracing::debug!("RocksDB Keys deserialize(key) error: {e}");
             })
             .ok()?;
 
@@ -99,14 +99,14 @@ impl<'a, V: 'a + Clone + Serialize + DeserializeOwned> Iterator for Values<'a, V
             .db_iter
             .next()?
             .map_err(|e| {
-                tracing::error!("RocksDB Values iterator error: {e}");
+                tracing::debug!("RocksDB Values iterator error: {e}");
             })
             .ok()?;
 
         // Deserialize the value.
         let value = bincode::deserialize(&value)
             .map_err(|e| {
-                tracing::error!("RocksDB Values deserialize(value) error: {e}");
+                tracing::debug!("RocksDB Values deserialize(value) error: {e}");
             })
             .ok()?;
 
