@@ -18,6 +18,7 @@ pub trait IzarNetwork: Clone + Copy + Send + Sync + 'static + std::fmt::Debug {
     type Optimism: EthNetwork;
     type Arbitrum: EthNetwork;
     type Taiko: EthNetwork;
+    type HashKey: EthNetwork;
 }
 
 #[macro_export]

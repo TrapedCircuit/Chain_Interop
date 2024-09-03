@@ -27,6 +27,7 @@ pub struct VoterConfig {
     pub optimism_config: Option<EthConfig>,
     pub arbitrum_config: Option<EthConfig>,
     pub taiko_config: Option<EthConfig>,
+    pub hashkey_config: Option<EthConfig>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -127,6 +128,12 @@ async fn init<I: IzarNetwork>(cli: Cli) {
     if let Some(taiko_config) = config.taiko_config {
         let conn = Box::new(taiko_config.parse::<I::Taiko>());
         validators.insert_connector(I::Taiko::IZAR_CHAIN_ID, conn);
+    }
+
+    // init hashkey
+    if let Some(hashkey_config) = config.hashkey_config {
+        let conn = Box::new(hashkey_config.parse::<I::HashKey>());
+        validators.insert_connector(I::HashKey::IZAR_CHAIN_ID, conn);
     }
 
     // init voters

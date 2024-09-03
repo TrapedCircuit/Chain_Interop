@@ -16,6 +16,7 @@ impl IzarNetwork for IzarTestnet {
     type Optimism = OptimismTestnet;
     type Arbitrum = ArbitrumTestnet;
     type Taiko = TaikoTestnet;
+    type HashKey = HashKeyTestnet;
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -35,6 +36,21 @@ impl EthNetwork for Sepolia {
 }
 
 #[derive(Clone, Copy, Debug)]
+pub struct HashKeyTestnet;
+
+impl EthNetwork for HashKeyTestnet {
+    const WRAPPER_CONTRACT: &'static str = "0xb05a814e7f673d671b3a1e22bca162d218d33806";
+    const PROXY_CONTRACT: &'static str = "0x6b5db46d2f565e35d401cbb6a26d3dd1f83a123a";
+    const LOCK_CONTRACT: &'static str = "0x362aa0de04c8cb5f20ada7f9440e60ef8f6abad4";
+    const LOGIC_CONTRACT: &'static str = "0x915889de409d64004b09a7289d0713a6f77d4cb5";
+
+    const ETH_CHAIN_ID: u32 = 133;
+    const IZAR_CHAIN_ID: u32 = 3;
+    const GAS_LIMIT: u128 = 1_000_000;
+    const START_HEIGHT: u64 = 1083197;
+}
+
+#[derive(Clone, Copy, Debug)]
 pub struct LineaTestnet;
 
 impl EthNetwork for LineaTestnet {
@@ -44,7 +60,7 @@ impl EthNetwork for LineaTestnet {
     const LOGIC_CONTRACT: &'static str = "0x654dDC5c45C59be6C2699DbCbAd0fA5Bd16F6eC0";
 
     const ETH_CHAIN_ID: u32 = 59140;
-    const IZAR_CHAIN_ID: u32 = 3;
+    const IZAR_CHAIN_ID: u32 = 7;
     const GAS_LIMIT: u128 = 1_000_000;
     const START_HEIGHT: u64 = 4044130;
 }

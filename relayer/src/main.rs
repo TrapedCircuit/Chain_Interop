@@ -30,7 +30,9 @@ pub struct RelayerConfig {
     pub optimism_config: Option<EthConfig>,
     pub arbitrum_config: Option<EthConfig>,
     pub taiko_config: Option<EthConfig>,
+    pub hashkey_config: Option<EthConfig>,
 }
+
 #[derive(Debug, Deserialize)]
 pub struct AleoConfig {
     pk: String,
@@ -130,6 +132,11 @@ async fn init<I: IzarNetwork>(config: RelayerConfig) {
     // init taiko operator
     if let Some(config) = config.taiko_config {
         operators.insert_operator(I::Taiko::IZAR_CHAIN_ID, Box::new(config.parse::<I::Taiko>()));
+    }
+
+    // init hashkey operator
+    if let Some(config) = config.hashkey_config {
+        operators.insert_operator(I::HashKey::IZAR_CHAIN_ID, Box::new(config.parse::<I::HashKey>()));
     }
 
     // init operators
