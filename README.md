@@ -1,4 +1,4 @@
-# Chain Interop
+# IZAR
 
 ## Build
 
